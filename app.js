@@ -435,9 +435,3 @@ if (modeBtn) {
   loadHearts();
   heartBtn.addEventListener("click", addHeartOnce);
 })();
-
-
-  ensureCounter();
-  heartBtn.addEventListener("click", hitOnce);
-})();
-

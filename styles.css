@@ -235,5 +235,7 @@ body.rgb-active .btn {
   0% { filter: hue-rotate(0deg); }
   100% { filter: hue-rotate(360deg); }
 }
+#heartBtn { transition: transform .2s ease, opacity .2s ease; }
 #heartBtn.liked { transform: scale(1.08); }
-#heartBtn { transition: transform .2s ease; }
+#heartBtn:disabled { opacity: .6; cursor: not-allowed; }
+

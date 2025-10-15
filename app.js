@@ -70,19 +70,19 @@ function spawnMeteor() {
   });
 }
 
-// --- robots (enhanced visuals, color shift, mouse influence) ---
-const robots = [];
-for (let r = 0; r < 10; r++) {
-  robots.push({
-    x: Math.random()*canvas.width,
-    y: Math.random()*canvas.height,
-    size: 40 + Math.random()*40,
-    dx: (Math.random()*0.4+0.1)*(Math.random()<0.5?1:-1),
-    dy: (Math.random()*0.2+0.05)*(Math.random()<0.5?1:-1),
-    hue: Math.random()*360,
-    spin: Math.random()*Math.PI*2
-  });
+function animate() {
+  drawBackground();
+  drawStarsLayer(starsFar, 0.010, 230);
+  drawStarsLayer(starsNear, 0.020, 255);
+  drawMeteors();
+  drawRobots();
+
+  // draw flames last so you can SEE them clearly
+  if (rgbMode) drawFlames();
+
+  requestAnimationFrame(animate);
 }
+
 
 function drawBackground() {
   // Big dark radial gradient (galaxy core)
@@ -137,59 +137,102 @@ function drawMeteors() {
   meteors = meteors.filter(m => m.x < canvas.width + 220 && m.y < canvas.height + 220);
 }
 
-function drawRobots() {
-  for (const b of robots) {
-    // gentle mouse attraction
-    const toMx = mouse.x - b.x, toMy = mouse.y - b.y;
-    b.dx += (toMx * 0.00002); b.dy += (toMy * 0.00002);
-    // limit drift speed
-    b.dx = Math.max(-0.7, Math.min(0.7, b.dx));
-    b.dy = Math.max(-0.5, Math.min(0.5, b.dy));
+function updateRobots() {
+  const maxSpeed = 0.8;
+  const friction = 0.985;
+  const sepRadius = 90;      // keep bots apart
+  const sepForce  = 0.012;   // separation strength
+  const mouseForce = 0.00001;// much weaker mouse pull
+  const t = performance.now() * 0.001;
 
-    // move + wrap
-    b.x += b.dx; b.y += b.dy; b.spin += 0.002; b.hue = (b.hue + 0.35) % 360;
+  for (let i = 0; i < robots.length; i++) {
+    const b = robots[i];
+
+    // Independent wander (prevents synchronized motion)
+    b.vx += Math.cos(t * 0.9 + b.jitter) * 0.0015;
+    b.vy += Math.sin(t * 1.1 + b.jitter) * 0.0015;
+
+    // Mild mouse attraction only if close to cursor
+    const dxm = mouse.x - b.x, dym = mouse.y - b.y;
+    const d2m = dxm * dxm + dym * dym;
+    if (d2m < 250 * 250) { b.vx += dxm * mouseForce; b.vy += dym * mouseForce; }
+
+    // Separation: push away from nearby bots
+    for (let j = 0; j < robots.length; j++) {
+      if (i === j) continue;
+      const o = robots[j];
+      const sx = b.x - o.x, sy = b.y - o.y;
+      const dist2 = sx * sx + sy * sy;
+      if (dist2 > 1 && dist2 < sepRadius * sepRadius) {
+        const inv = sepForce / Math.sqrt(dist2);
+        b.vx += sx * inv;
+        b.vy += sy * inv;
+      }
+    }
+
+    // Friction + speed cap
+    b.vx *= friction; b.vy *= friction;
+    const sp = Math.hypot(b.vx, b.vy);
+    if (sp > maxSpeed) { b.vx = (b.vx / sp) * maxSpeed; b.vy = (b.vy / sp) * maxSpeed; }
+
+    // Integrate
+    b.x += b.vx; b.y += b.vy;
+    b.spin += 0.002; b.hue = (b.hue + 0.35) % 360;
+
+    // Wrap edges
     if (b.x < -140) b.x = canvas.width + 140;
     if (b.x > canvas.width + 140) b.x = -140;
     if (b.y < -140) b.y = canvas.height + 140;
     if (b.y > canvas.height + 140) b.y = -140;
 
-    // draw: metallic frame + sensors + glow
+    // Emit flames in RGB mode
+    if (rgbMode) spawnFlame(b.x, b.y + b.size * 0.55);
+  }
+}
+
+function renderRobots() {
+  for (const b of robots) {
     ctx.save();
     ctx.translate(b.x, b.y);
     ctx.rotate(Math.sin(b.spin) * 0.25);
 
-    // outer frame (metallic gradient illusion using two strokes)
+    // frame + glow
     ctx.lineWidth = 3; ctx.globalAlpha = 0.95;
     ctx.strokeStyle = `hsl(${b.hue}, 100%, 85%)`;
     ctx.shadowColor = `hsl(${b.hue}, 100%, 70%)`;
     ctx.shadowBlur = 20;
     ctx.beginPath();
-    ctx.rect(-b.size/2, -b.size/2, b.size, b.size);
-    ctx.rect(-b.size/4, -b.size/4, b.size/2, b.size/2);
+    ctx.rect(-b.size / 2, -b.size / 2, b.size, b.size);
+    ctx.rect(-b.size / 4, -b.size / 4, b.size / 2, b.size / 2);
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // inner “sensors” (two glowing circles)
-    const eyeOffset = b.size*0.22;
-    ctx.fillStyle = `hsl(${(b.hue+40)%360}, 100%, 65%)`;
+    // sensors
+    const eyeOffset = b.size * 0.22;
+    ctx.fillStyle = `hsl(${(b.hue + 40) % 360}, 100%, 65%)`;
     ctx.globalAlpha = 0.85;
-    ctx.beginPath(); ctx.arc(-eyeOffset, -eyeOffset*0.4, b.size*0.06, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc( eyeOffset, -eyeOffset*0.4, b.size*0.06, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-eyeOffset, -eyeOffset * 0.4, b.size * 0.06, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc( eyeOffset, -eyeOffset * 0.4, b.size * 0.06, 0, Math.PI * 2); ctx.fill();
 
     ctx.restore();
   }
+  ctx.globalAlpha = 1;
 }
 
 function animate() {
   drawBackground();
-  // parallax: far then near
   drawStarsLayer(starsFar, 0.010, 230);
   drawStarsLayer(starsNear, 0.020, 255);
   drawMeteors();
-  drawRobots();
+
+  updateRobots();     // update physics (spread out)
+  renderRobots();     // draw robots
+  if (rgbMode) drawFlames(); // draw flames last so they’re visible
+
   requestAnimationFrame(animate);
 }
-requestAnimationFrame(animate);
+
+
 
 // =====================
 // 6) Ray’s Assistant Chat
@@ -223,84 +266,133 @@ chatSend.addEventListener("click", () => {
 });
 
 // =====================
-// 7) Ambient Synth Toggle (WebAudio, very soft)
+// 7) Ambient Synth Toggle (audible + smooth fade)
 // =====================
 let audioCtx, osc, gain, lfo, lfoGain, ambientOn = false;
-function startAmbient(){
+const musicBtn = document.getElementById("musicToggle");
+
+async function startAmbient(){
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") await audioCtx.resume();
+
   osc = audioCtx.createOscillator();
   gain = audioCtx.createGain();
   lfo = audioCtx.createOscillator();
   lfoGain = audioCtx.createGain();
 
-  osc.type = "sine";       osc.frequency.value = 196;       // G3
-  gain.gain.value = 0.0009;                                 // super soft
-  lfo.frequency.value = 0.07; lfoGain.gain.value = 35;      // slow vibrato
+  // Tone: deep sci-fi hum (change to "sine" + 196 for lighter)
+  osc.type = "sawtooth";
+  osc.frequency.value = 80;        // low rumble
+  gain.gain.value = 0.00001;       // start silent (we'll fade in)
+  lfo.frequency.value = 0.07;      // slow vibrato
+  lfoGain.gain.value = 35;
 
   lfo.connect(lfoGain).connect(osc.frequency);
   osc.connect(gain).connect(audioCtx.destination);
   osc.start(); lfo.start();
+
+  // Smooth fade in
+  const now = audioCtx.currentTime;
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.linearRampToValueAtTime(0.012, now + 1.2); // audible but gentle
 }
-document.getElementById("musicToggle").addEventListener("click", async ()=>{
-  if(!ambientOn){ startAmbient(); ambientOn = true; }
-  else { if(audioCtx) await audioCtx.close(); ambientOn = false; }
+
+async function stopAmbient(){
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  gain.gain.cancelScheduledValues(now);
+  gain.gain.linearRampToValueAtTime(0.00001, now + 0.8); // fade out
+  setTimeout(async () => { 
+    if (audioCtx && audioCtx.state !== "closed") await audioCtx.close(); 
+  }, 900);
+}
+
+musicBtn.addEventListener("click", async () => {
+  try {
+    if (!ambientOn) {
+      await startAmbient();
+      ambientOn = true;
+      musicBtn.textContent = "🔇 Stop Ambient";
+    } else {
+      await stopAmbient();
+      ambientOn = false;
+      musicBtn.textContent = "🎵 Ambient";
+    }
+  } catch (e) {
+    console.warn("Audio init failed:", e);
+  }
 });
 
+
 // =====================
-// 8) RGB Universe Mode Toggle 🌈🔥
+// 8) RGB Universe Mode Toggle 🌈🔥 (improved flames)
 // =====================
 let rgbMode = false;
-let flames = []; // flame particles
 const modeBtn = document.getElementById("modeToggle");
-
 modeBtn.addEventListener("click", () => {
   rgbMode = !rgbMode;
   document.body.classList.toggle("rgb-active", rgbMode);
   modeBtn.textContent = rgbMode ? "🌌 Normal Mode" : "🌈 RGB Mode";
 });
 
-// --- Flame particle generator ---
-function spawnFlame(x, y) {
-  for (let i = 0; i < 4; i++) {
+// ---- brighter, bigger flames with glow (additive blend) ----
+let flames = [];
+const FLAME_COUNT_PER_FRAME = 10;   // was 4
+const FLAME_SIZE = 3.2;             // was 2.5
+const FLAME_DECAY = 0.03;           // faster decay so trail looks dynamic
+
+function spawnFlame(x, y, hueBase=20) {
+  for (let i = 0; i < FLAME_COUNT_PER_FRAME; i++) {
     flames.push({
-      x: x + Math.random() * 10 - 5,
-      y: y + Math.random() * 10 - 5,
-      vx: (Math.random() - 0.5) * 0.8,
-      vy: -Math.random() * 1.8 - 0.3,
+      x: x + Math.random() * 12 - 6,
+      y: y + Math.random() * 10,
+      vx: (Math.random() - 0.5) * 0.9,
+      vy: -Math.random() * 2.0 - 0.4,
       life: 1,
-      color: `hsl(${Math.random() * 30}, 100%, 50%)`
+      hue: hueBase + Math.random() * 20 // orange→gold range
     });
   }
 }
 
 function drawFlames() {
+  // additive blending makes glow pop
+  const prevOp = ctx.globalCompositeOperation;
+  ctx.globalCompositeOperation = "lighter";
+
   for (let f of flames) {
-    ctx.globalAlpha = f.life;
-    ctx.fillStyle = f.color;
+    ctx.globalAlpha = f.life * 0.9;
+    ctx.fillStyle = `hsl(${f.hue}, 100%, 55%)`;
     ctx.beginPath();
-    ctx.arc(f.x, f.y, 2.5, 0, Math.PI * 2);
+    ctx.arc(f.x, f.y, FLAME_SIZE, 0, Math.PI * 2);
     ctx.fill();
 
+    // motion & decay
     f.x += f.vx;
     f.y += f.vy;
-    f.life -= 0.02;
+    f.life -= FLAME_DECAY;
   }
-  flames = flames.filter(f => f.life > 0);
+
+  // cleanup
+  flames = flames.filter(f => f.life > 0.02);
   ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = prevOp;
 }
 
-// --- Hook flames + RGB shifts into main animation ---
-const oldDrawRobots = drawRobots;
+// ---- hook flames into robot draw (spawn), but draw them ON TOP in animate() ----
+const _drawRobotsOriginal = drawRobots;
 drawRobots = function () {
-  for (const b of robots) {
-    if (rgbMode) spawnFlame(b.x, b.y + b.size / 2); // emit fire
+  // spawn flames at each robot's “thruster” when RGB mode is ON
+  if (rgbMode) {
+    for (const b of robots) {
+      spawnFlame(b.x, b.y + b.size * 0.55); // tail position
+    }
   }
-  if (rgbMode) drawFlames();
-  oldDrawRobots(); // draw regular robots
+  // draw the robots themselves
+  _drawRobotsOriginal();
 };
 
-// --- RGB stars color cycling ---
-const oldDrawStarsLayer = drawStarsLayer;
+// ---- make stars cycle color in RGB mode (unchanged) ----
+const _drawStarsLayerOriginal = drawStarsLayer;
 drawStarsLayer = function (arr, parallaxFactor, colorBase = 255) {
   const offX = (mouse.x - canvas.width / 2) * parallaxFactor;
   const offY = (mouse.y - canvas.height / 2) * parallaxFactor;

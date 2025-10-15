@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin – Ray Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-auth-compat.js"></script>
+
+  <script>
+    // SAME config you use on your site:
+    const firebaseConfig = {
+      apiKey: "AIzaSyCsbAZP_yoj68Rt2y68O0CmwWTOdfPsuc4",
+      authDomain: "ray-portfolio1.firebaseapp.com",
+      databaseURL: "https://ray-portfolio1-default-rtdb.firebaseio.com",
+      projectId: "ray-portfolio1",
+      storageBucket: "ray-portfolio1.firebasestorage.app",
+      messagingSenderId: "655031966981",
+      appId: "1:655031966981:web:eb07f840182fd096f42b6c"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; background:#0b1220; color:#e8f0ff; padding:24px; }
+    .card { background:#111a2e; border:1px solid #233456; border-radius:14px; padding:18px; max-width:560px; }
+    button { padding:10px 14px; border-radius:10px; border:1px solid #2d4370; background:#13203a; color:#e8f0ff; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    input { padding:10px; border-radius:8px; border:1px solid #2d4370; background:#0e1a30; color:#e8f0ff; width:120px; }
+    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .muted { color:#9bb0d3; font-size:.95rem; }
+    .ok { color:#7bff9f; }
+    .warn { color:#ffd37b; }
+    .err { color:#ff8a8a; }
+  </style>
+</head>
+<body>
+  <h1>🔥 Admin – Ray’s Portfolio</h1>
+  <p class="muted">Sign in with your Google account to manage counters.</p>
+
+  <div class="card" id="authCard">
+    <div class="row">
+      <button id="signin">Sign in with Google</button>
+      <button id="signout" style="display:none">Sign out</button>
+    </div>
+    <p id="who" class="muted">Not signed in.</p>
+  </div>
+
+  <div class="card" style="margin-top:16px;" id="panel" hidden>
+    <h3>❤️ Hearts</h3>
+    <div>Current total: <strong id="hearts">—</strong></div>
+    <div class="row">
+      <button id="reset">Reset to 0</button>
+      <input id="setVal" type="number" min="0" placeholder="Set value" />
+      <button id="apply">Apply</button>
+    </div>
+    <p class="muted">Admin UID: <span id="uid">—</span></p>
+    <p class="warn">Reminder: update database rules to allow admin writes (see instructions).</p>
+    <p class="ok" id="msg"></p>
+    <p class="err" id="err"></p>
+  </div>
+
+  <script>
+    const db = firebase.database();
+    const heartsRef = db.ref("hearts/total");
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    const signin = document.getElementById('signin');
+    const signout = document.getElementById('signout');
+    const who = document.getElementById('who');
+    const uidEl = document.getElementById('uid');
+    const heartsEl = document.getElementById('hearts');
+    const panel = document.getElementById('panel');
+    const resetBtn = document.getElementById('reset');
+    const setValInput = document.getElementById('setVal');
+    const applyBtn = document.getElementById('apply');
+    const msg = document.getElementById('msg');
+    const err = document.getElementById('err');
+
+    signin.onclick = () => auth.signInWithPopup(provider);
+    signout.onclick = () => auth.signOut();
+
+    auth.onAuthStateChanged(user => {
+      msg.textContent = ""; err.textContent = "";
+      if (user) {
+        who.textContent = `Signed in as ${user.displayName} (${user.email})`;
+        uidEl.textContent = user.uid;
+        console.log("YOUR ADMIN UID:", user.uid); // copy this to rules
+        signin.style.display = "none";
+        signout.style.display = "inline-block";
+        panel.hidden = false;
+
+        // live hearts
+        heartsRef.on("value", s => heartsEl.textContent = s.val());
+      } else {
+        who.textContent = "Not signed in.";
+        signin.style.display = "inline-block";
+        signout.style.display = "none";
+        panel.hidden = true;
+        heartsRef.off();
+      }
+    });
+
+    resetBtn.onclick = async () => {
+      try { await heartsRef.set(0); msg.textContent = "Reset done."; }
+      catch (e) { err.textContent = e.message; }
+    };
+
+    applyBtn.onclick = async () => {
+      const n = parseInt(setValInput.value, 10);
+      if (isNaN(n) || n < 0) { err.textContent = "Enter a valid number."; return; }
+      err.textContent = ""; msg.textContent = "";
+      try { await heartsRef.set(n); msg.textContent = "Value updated."; }
+      catch (e) { err.textContent = e.message; }
+    };
+  </script>
+</body>
+</html>

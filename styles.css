@@ -211,3 +211,28 @@ img{ max-width:100%; display:block }
   .typing{ font-size:18px }
   .btn{ padding:9px 12px }
 }
+/* --- RGB Mode Effects --- */
+body.rgb-active .title {
+  color: white;
+  text-shadow:
+    0 0 10px #00fff9,
+    0 0 20px #ff00ff,
+    0 0 40px #00ff00,
+    0 0 60px #ff0000;
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%,100% { filter: hue-rotate(0deg); opacity: 1; }
+  50% { filter: hue-rotate(180deg); opacity: 0.85; }
+}
+
+body.rgb-active .btn {
+  box-shadow: 0 0 12px #0ff, inset 0 0 8px #0ff;
+  animation: rgbButton 4s linear infinite;
+}
+
+@keyframes rgbButton {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}

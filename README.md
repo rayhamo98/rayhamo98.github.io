@@ -1,7 +1,8 @@
 # 👋 Hi, I'm Rimon Hamo “Ray” 
 
 ### Professional Summary
-Dynamic and detail-oriented professional with a strong foundation in automotive mechanics, diagnostics, full-stack development, and computer systems. Deeply passionate about robotics and artificial intelligence, with a commitment to advancing innovation in these fields through advanced technical skills and problem-solving expertise. Aspires to pursue a master’s degree in computer science to drive cutting-edge solutions in AI and robotics, delivering impactful results in technology-driven environments.
+Dynamic and detail-oriented professional with a strong foundation in automotive mechanics, diagnostics, full-stack development, and computer systems. Deeply passionate about robotics and artificial intelligence, with a commitment to advancing innovation through technical expertise, analytical thinking, and creative problem-solving. Blending mechanical knowledge with computer science and software development to design intelligent systems that move, sense, and adapt. Aspiring to pursue a master’s degree in computer science to drive cutting-edge solutions in AI and robotics, shaping the future of human–machine collaboration and delivering meaningful, technology-driven results.
+
 
 ---
 

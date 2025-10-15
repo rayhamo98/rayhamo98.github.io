@@ -380,3 +380,64 @@ if (modeBtn) {
     modeBtn.textContent = rgbMode ? "🌌 Normal Mode" : "🌈 RGB Mode";
   });
 }
+// =====================
+// 9) Heart (Like) Counter — public total via CountAPI
+// =====================
+const heartBtn = document.getElementById("heartBtn");
+const heartCountEl = document.getElementById("heartCount");
+
+// Use your site as the namespace; keep it simple (no dots)
+const HEART_NS  = "rayhamo98_github_io";
+const HEART_KEY = "hearts_total";
+
+// helper: ensure counter exists, then read it
+async function loadHearts() {
+  try {
+    // try get
+    let r = await fetch(`https://api.countapi.xyz/get/${HEART_NS}/${HEART_KEY}`);
+    if (!r.ok) {
+      // create with 0 if missing
+      await fetch(`https://api.countapi.xyz/create?namespace=${HEART_NS}&key=${HEART_KEY}&value=0`);
+      r = await fetch(`https://api.countapi.xyz/get/${HEART_NS}/${HEART_KEY}`);
+    }
+    const data = await r.json();
+    heartCountEl.textContent = data.value ?? 0;
+  } catch (_e) {
+    heartCountEl.textContent = "0";
+  }
+}
+
+// one-like-per-browser using localStorage
+async function addHeartOnce() {
+  if (!heartBtn) return;
+  const already = localStorage.getItem("ray_hearted");
+  if (already) {
+    // small bounce feedback
+    heartBtn.classList.add("liked");
+    setTimeout(()=>heartBtn.classList.remove("liked"), 220);
+    return;
+  }
+  try {
+    const r = await fetch(`https://api.countapi.xyz/hit/${HEART_NS}/${HEART_KEY}`);
+    const data = await r.json();
+    heartCountEl.textContent = data.value ?? (parseInt(heartCountEl.textContent||"0",10)+1);
+    heartBtn.classList.add("liked");
+    localStorage.setItem("ray_hearted","1");
+    setTimeout(()=>heartBtn.classList.remove("liked"), 220);
+  } catch(_e) {
+    // fallback: bump locally
+    heartCountEl.textContent = String((parseInt(heartCountEl.textContent||"0",10) + 1));
+  }
+}
+
+if (heartBtn && heartCountEl) {
+  loadHearts();
+  heartBtn.addEventListener("click", addHeartOnce);
+}
+// Public page views (auto-hit on load)
+(async function(){
+  const V_NS="rayhamo98_github_io", V_KEY="views_total";
+  try {
+    await fetch(`https://api.countapi.xyz/hit/${V_NS}/${V_KEY}`);
+  } catch(_e){}
+})();

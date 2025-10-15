@@ -2,277 +2,162 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rimon Hamo “Ray” — Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rimon “Ray” Hamo — Portfolio</title>
   <meta name="description" content="Robotics, AI, and modern engineering projects by Rimon 'Ray' Hamo." />
+
+  <!-- Fonts (optional) -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg-0:#0b0f14;
-      --bg-1:#0f1720;
-      --card:#0f1926cc;
-      --text:#e7f2ff;
-      --muted:#a9bcd6;
-      --accent:#5cf2d6;
-      --accent-2:#6ea8ff;
-      --ring: 0 0 0 2px rgba(92,242,214,0.35), 0 0 24px rgba(92,242,214,0.25);
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg-0); color:var(--text); font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; overflow-x:hidden}
-    a{color:var(--accent-2); text-decoration:none}
-    a:hover{text-decoration:underline}
-    /* Galaxy canvas background */
-    #sky{position:fixed; inset:0; z-index:-2; background:radial-gradient(1400px 900px at 80% -10%, #1f2a3a66 0%, transparent 60%), radial-gradient(1100px 800px at -10% 20%, #17304b66 0%, transparent 55%), var(--bg-0)}
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    header{padding:28px 0 8px}
-    .chip{display:inline-block;padding:6px 10px;border:1px solid #274258; border-radius:999px; margin:6px 6px 0 0; color:var(--muted); font-size:13px; background:linear-gradient(180deg,#0f1b2a,#0d1420); box-shadow:inset 0 0 12px #0b1220}
-    .hero{position:relative; border-radius:20px; padding:36px; background:linear-gradient(135deg, #0e1622 0%, #0b1018 100%); overflow:hidden; border:1px solid #243245; box-shadow:0 20px 80px rgba(0,0,0,0.4); text-align:center}
-    .hero:before{content:""; position:absolute; inset:-200px; background:conic-gradient(from 180deg at 50% 50%, #5cf2d622, #6ea8ff22, #9e6bff22, #5cf2d622); filter:blur(80px); animation:spin 26s linear infinite; pointer-events:none;}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .title{font-size:36px; font-weight:800; letter-spacing:.2px; margin:0 0 10px}
-    .subtitle{font-size:18px; color:var(--muted); margin:0 0 18px}
-    .typing{font-weight:800; font-size:20px; color:var(--accent)}
-    .btns{display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-top:14px; position:relative; z-index:2}
-    .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; background:#0e1b2a; border:1px solid #1f3147; text-decoration:none; color:var(--text); font-weight:600}
-    .btn:hover{box-shadow:var(--ring)}
-    .btn.primary{background:linear-gradient(180deg,#0e2a28,#0a1f1d); border-color:#1b3f3a}
-    .grid{display:grid; gap:18px; grid-template-columns:repeat(12,1fr)}
-    .card{grid-column:span 12; background:var(--card); border:1px solid #213149; border-radius:18px; padding:22px; backdrop-filter: blur(6px)}
-    .card h3{margin:0 0 6px}
-    .muted{color:var(--muted)}
-    .robotrow{display:flex; flex-wrap:wrap; gap:14px; margin-top:8px}
-    .robot{background:#0d141e; border:1px solid #26354b; border-radius:16px; padding:12px}
-    footer{opacity:.75; font-size:13px; text-align:center; padding:28px 0 12px}
-    @media (min-width:780px){
-      .card.half{grid-column:span 6}
-      .card.third{grid-column:span 4}
-    }
-    blockquote{margin:14px 0 0; padding-left:14px; border-left:3px solid #274258; color:#c7d7ee}
-  </style>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Animated starfield / meteors -->
-  <canvas id="sky"></canvas>
+  <!-- Starfield / Meteors background -->
+  <canvas id="sky" aria-hidden="true"></canvas>
 
   <div class="container">
-    <header>
-      <div class="hero">
-        <h1 class="title">Rimon “Ray” Hamo</h1>
-        <p class="subtitle">
-          Engineer & builder focused on <span class="typing" id="typing"></span>
-        </p>
-        <p class="muted" style="max-width:72ch; margin:0 auto;">
-          Dynamic and detail-oriented professional with a strong foundation in automotive mechanics, diagnostics, full-stack development, and computer systems. Deeply passionate about robotics and artificial intelligence, blending mechanical know-how with computer science to create systems that move, sense, and make decisions. Pursuing advanced CS to push the edge of human–machine collaboration.
-        </p>
-        <div class="btns">
-          <!-- If your resume has an apostrophe, URL-encode it as %27 -->
-          <a class="btn primary" href="Rimon%27s-Resume.pdf" title="Open resume PDF">📄 Resume</a>
-          <a class="btn" href="https://www.linkedin.com/in/rimon-hamo" target="_blank" rel="noopener">🔗 LinkedIn</a>
-          <a class="btn" href="https://github.com/rayhamo98" target="_blank" rel="noopener">🐙 GitHub</a>
-          <a class="btn" href="mailto:RimonHamo@yahoo.com">✉️ Email</a>
-          <button class="btn" id="sayHi" type="button">🔊 Play Welcome</button>
-        </div>
-      </div>
+    <!-- HERO -->
+    <header class="hero">
+      <h1 class="title">Rimon “Ray” Hamo</h1>
+      <p class="subtitle">
+        Engineer & builder focused on <span id="typing" class="typing"></span>
+      </p>
+      <p class="lead">
+        Dynamic and detail-oriented professional with a strong foundation in automotive mechanics, diagnostics,
+        full-stack development, and computer systems. Deeply passionate about robotics and artificial intelligence,
+        blending mechanical know-how with computer science to create systems that move, sense, and make decisions.
+        Pursuing advanced CS to push the edge of human–machine collaboration.
+      </p>
+
+      <nav class="btns">
+        <!-- If your resume filename has an apostrophe, URL-encode it as %27 -->
+        <a class="btn primary" href="Rimon%27s-Resume.pdf" title="Open resume PDF">📄 Resume</a>
+        <a class="btn" href="https://www.linkedin.com/in/rimon-hamo" target="_blank" rel="noopener">🔗 LinkedIn</a>
+        <a class="btn" href="https://github.com/rayhamo98" target="_blank" rel="noopener">🐙 GitHub</a>
+        <a class="btn" href="mailto:RimonHamo@yahoo.com">✉️ Email</a>
+        <button class="btn" id="sayHi" type="button">🔊 Play Welcome</button>
+      </nav>
     </header>
 
-    <main class="grid" style="margin-top:20px;">
+    <main class="grid">
       <!-- Skills -->
-      <section class="card">
+      <section class="card reveal">
         <h3>🔧 Technical Stack</h3>
-        <div class="chip">Python</div>
-        <div class="chip">C++</div>
-        <div class="chip">Java</div>
-        <div class="chip">Git & GitHub</div>
-        <div class="chip">Jupyter</div>
-        <div class="chip">Pandas</div>
-        <div class="chip">ECU/Infotainment</div>
-        <div class="chip">3D Printing</div>
-        <div class="chip">Welding/Fabrication</div>
-        <div class="chip">Diagnostics</div>
-        <div class="chip">Linux/CLI</div>
+        <div class="chips">
+          <span class="chip">Python</span>
+          <span class="chip">C++</span>
+          <span class="chip">Java</span>
+          <span class="chip">Git & GitHub</span>
+          <span class="chip">Jupyter</span>
+          <span class="chip">Pandas</span>
+          <span class="chip">ECU/Infotainment</span>
+          <span class="chip">3D Printing</span>
+          <span class="chip">Welding/Fabrication</span>
+          <span class="chip">Diagnostics</span>
+          <span class="chip">Linux/CLI</span>
+        </div>
       </section>
 
       <!-- Projects -->
-      <section class="card half">
+      <section class="card half reveal">
         <h3>🤖 TARS Robot</h3>
         <p class="muted">
-          Work in progress; will finish in the future. Large-format, Interstellar-inspired robot with modular frame, sensors, and control logic.
-          <strong>Tech:</strong> Python, microcontrollers, 3D printing.
+          Work in progress; will finish in the future. Large-format, Interstellar-inspired robot with modular frame,
+          sensors, and control logic. <strong>Tech:</strong> Python, microcontrollers, 3D printing.
         </p>
-        <div class="robotrow" aria-hidden="true">
-          <!-- Inline SVG robots -->
-          <div class="robot">
-            <svg width="88" height="88" viewBox="0 0 100 100">
-              <rect x="10" y="20" width="80" height="60" rx="10" fill="#e6e6e6" stroke="#1a2940"/>
-              <circle cx="35" cy="45" r="8" fill="#1a2940"/>
-              <circle cx="65" cy="45" r="8" fill="#1a2940"/>
-              <rect x="30" y="62" width="40" height="6" rx="3" fill="#1a2940"/>
-              <rect x="47" y="10" width="6" height="10" fill="#1a2940"/>
-              <circle cx="50" cy="10" r="5" fill="#e6e6e6" stroke="#1a2940"/>
-            </svg>
-          </div>
-          <div class="robot">
-            <svg width="88" height="88" viewBox="0 0 100 100">
-              <rect x="15" y="25" width="70" height="50" rx="8" fill="#f2f2f2" stroke="#1a2940"/>
-              <circle cx="35" cy="45" r="9" fill="#1a2940"/>
-              <circle cx="65" cy="45" r="9" fill="#1a2940"/>
-              <path d="M35 65 Q50 75 65 65" fill="none" stroke="#1a2940" stroke-width="4" stroke-linecap="round"/>
-              <rect x="47" y="15" width="6" height="10" fill="#1a2940"/>
-            </svg>
-          </div>
-          <div class="robot">
-            <svg width="88" height="88" viewBox="0 0 100 100">
-              <rect x="12" y="22" width="76" height="56" rx="12" fill="#ffffff" stroke="#1a2940"/>
-              <rect x="25" y="35" width="15" height="12" rx="2" fill="#1a2940"/>
-              <rect x="60" y="35" width="15" height="12" rx="2" fill="#1a2940"/>
-              <rect x="32" y="60" width="36" height="6" rx="3" fill="#1a2940"/>
-              <circle cx="50" cy="18" r="5" fill="#ffffff" stroke="#1a2940"/>
-              <line x1="50" y1="18" x2="50" y2="25" stroke="#1a2940" stroke-width="2"/>
-            </svg>
-          </div>
+        <div class="robot-icons" aria-hidden="true">
+          <div class="robot robot-1"></div>
+          <div class="robot robot-2"></div>
+          <div class="robot robot-3"></div>
         </div>
       </section>
 
-      <section class="card half">
+      <section class="card half reveal">
         <h3>🧠 Intelligent Systems</h3>
-        <p class="muted">Prototyping perception & control: sensor fusion, classical ML heuristics, and microcontroller motion tests. Explorations in embedded vision, simple planning, and robust testing loops.</p>
-        <div class="chip">Sensors</div><div class="chip">Signal Processing</div><div class="chip">Control</div><div class="chip">MCUs</div><div class="chip">Classical ML</div>
+        <p class="muted">
+          Prototyping perception & control: sensor fusion, classical ML heuristics, and microcontroller motion tests.
+          Explorations in embedded vision, simple planning, and robust testing loops.
+        </p>
+        <div class="chips">
+          <span class="chip">Sensors</span>
+          <span class="chip">Signal Processing</span>
+          <span class="chip">Control</span>
+          <span class="chip">MCUs</span>
+          <span class="chip">Classical ML</span>
+        </div>
       </section>
 
-      <section class="card third">
+      <section class="card third reveal">
         <h3>🧮 Java Utilities</h3>
         <p class="muted">Small but robust utilities demonstrating OOP discipline, clean I/O, and error handling.</p>
       </section>
 
-      <section class="card third">
+      <section class="card third reveal">
         <h3>🛠️ Fabrication</h3>
         <p class="muted">3D printed parts and frame work (Neptune 4 Max), fast iteration, maintenance-friendly designs.</p>
       </section>
 
-      <section class="card third">
+      <section class="card third reveal">
         <h3>📓 Docs & Notes</h3>
-        <p class="muted">Readable, searchable docs to help technicians and future-me: wiring, configs, repro steps, validation.</p>
+        <p class="muted">Readable, searchable docs: wiring, configs, repro steps, validation.</p>
       </section>
 
       <!-- More details -->
-      <section class="card">
+      <section class="card reveal">
         <h3>📌 Now / Next</h3>
-        <ul class="muted" style="margin-top:8px; line-height:1.7;">
+        <ul class="now-next">
           <li><strong>Now:</strong> refining TARS frame & control loop; experimenting with embedded vision.</li>
           <li><strong>Next:</strong> integrate speech I/O and higher-level planning on microcontrollers.</li>
           <li><strong>Learning:</strong> advanced CS topics toward MS: algorithms, ML, and systems.</li>
         </ul>
       </section>
 
-      <section class="card" style="grid-column:span 12;">
+      <section class="card reveal">
         <h3>⚡ Focus Areas</h3>
-        <div class="grid">
-          <div class="card third">
+        <div class="focus-grid">
+          <div class="focus card">
             <h4>Perception</h4>
             <p class="muted">Sensors, signal processing, embedded vision.</p>
           </div>
-          <div class="card third">
+          <div class="focus card">
             <h4>Control</h4>
             <p class="muted">Motion planning, microcontrollers, testing.</p>
           </div>
-          <div class="card third">
+          <div class="focus card">
             <h4>Intelligence</h4>
             <p class="muted">Python prototyping, classical ML, heuristics.</p>
           </div>
         </div>
       </section>
 
-      <section class="card" style="grid-column:span 12;">
+      <section class="card reveal">
         <h3>💬 Quote</h3>
         <blockquote>“Technology is the bridge between today’s dreams and tomorrow’s reality.” — <strong>Rimon H.</strong></blockquote>
       </section>
     </main>
 
-    <footer>
+    <footer class="footer">
       © <span id="year"></span> Rimon “Ray” Hamo · <a href="mailto:RimonHamo@yahoo.com">RimonHamo@yahoo.com</a>
     </footer>
   </div>
 
-  <script>
-    // typing effect
-    const words = ["Robotics", "AI Systems", "Autonomous Tech", "Intelligent Machines"];
-    let i = 0, j = 0, del = false;
-    const el = document.getElementById('typing');
-    (function tick(){
-      const w = words[i];
-      el.textContent = del ? w.slice(0, j--) : w.slice(0, j++);
-      if(!del && j === w.length + 3) del = true;
-      if(del && j === 0){ del = false; i = (i + 1) % words.length; }
-      setTimeout(tick, del ? 60 : 120);
-    })();
+  <!-- Ray’s Assistant (UI only; behavior in app.js) -->
+  <button id="chatFab" aria-label="Open chat">💬</button>
+  <div id="chatBox" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+    <div class="chatHeader">
+      <div id="chatTitle">Ray’s Assistant</div>
+      <button id="chatClose" aria-label="Close chat">×</button>
+    </div>
+    <div class="chatLog" id="chatLog"></div>
+    <div class="chatInput">
+      <input id="chatMsg" placeholder="Ask about projects..." />
+      <button id="chatSend">Send</button>
+    </div>
+  </div>
 
-    // footer year
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // AI voice (requires user interaction)
-    const sayHiBtn = document.getElementById('sayHi');
-    sayHiBtn.addEventListener('click', () => {
-      const s = new SpeechSynthesisUtterance("Welcome to Ray's Future.");
-      s.rate = 1.02; s.pitch = 1.05; s.lang = 'en-US';
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(s);
-    });
-
-    // galaxy starfield + meteors
-    const c = document.getElementById('sky'), ctx = c.getContext('2d');
-    let W, H, stars = [], meteors = [];
-    function resize(){
-      W = c.width = innerWidth; H = c.height = innerHeight;
-    }
-    addEventListener('resize', resize); resize();
-
-    function spawnStars(n=220){
-      stars = [];
-      for(let k=0;k<n;k++){
-        stars.push({
-          x: Math.random()*W,
-          y: Math.random()*H,
-          r: Math.random()*1.2 + 0.2,
-          a: Math.random()*1,
-          s: Math.random()*0.6 + 0.2
-        });
-      }
-    }
-    function spawnMeteor(){
-      const y = Math.random()*H*0.6;
-      meteors.push({x:-50, y, vx: 8+Math.random()*5, vy: 3+Math.random()*2, life: 0});
-    }
-    spawnStars();
-
-    let last=0;
-    function loop(t){
-      const dt = (t-last)||16; last=t;
-      ctx.clearRect(0,0,W,H);
-
-      // stars twinkle
-      for(const s of stars){
-        s.a += (Math.random()-0.5)*0.05;
-        if(s.a<0.2) s.a=0.2; if(s.a>1) s.a=1;
-        ctx.fillStyle = `rgba(200,220,255,${s.a})`;
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
-      }
-
-      // meteors
-      if(Math.random() < 0.008) spawnMeteor();
-      for(let m of meteors){
-        m.x += m.vx; m.y += m.vy; m.life += dt;
-        const grad = ctx.createLinearGradient(m.x-80,m.y-40,m.x,m.y);
-        grad.addColorStop(0,'rgba(110,168,255,0)');
-        grad.addColorStop(1,'rgba(110,168,255,0.9)');
-        ctx.strokeStyle = grad; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(m.x-80,m.y-40); ctx.lineTo(m.x,m.y); ctx.stroke();
-      }
-      meteors = meteors.filter(m => m.x < W+100 && m.y < H+100);
-
-      requestAnimationFrame(loop);
-    }
-    requestAnimationFrame(loop);
-  </script>
+  <!-- Main JS -->
+  <script src="app.js"></script>
 </body>
 </html>

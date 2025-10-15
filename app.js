@@ -381,57 +381,58 @@ if (modeBtn) {
   });
 }
 // =====================
-// 9) Global Heart Counter (shared across all devices)
+// 9) Global Heart Counter — single shared key, no caching, one-click per visitor
 // =====================
 (() => {
   const heartBtn = document.getElementById("heartBtn");
   const heartCountEl = document.getElementById("heartCount");
   if (!heartBtn || !heartCountEl) return;
 
+  // ONE permanent global key for everyone:
   const NS  = "rayhamo98";
-  const KEY = "hearts_total_global";   // one fixed shared key
-  const USER_FLAG = "ray_hearted_global";
+  const KEY = "hearts_total_global";
+  const USER_FLAG = "ray_hearted_global";   // prevents repeat likes on same device
   const CACHE_KEY = "ray_heart_cache_global";
 
-  // Show cached value first
+  const API = "https://api.countapi.xyz";
+
+  // show cached while we fetch live
   heartCountEl.textContent = localStorage.getItem(CACHE_KEY) || "0";
 
-  // Fetch live global count
-  async function loadHearts() {
-    try {
-      const r = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`);
-      const d = await r.json();
-      heartCountEl.textContent = d.value ?? 0;
-      localStorage.setItem(CACHE_KEY, d.value);
-    } catch {
-      /* offline fallback */
-    }
+  async function getCount() {
+    const r = await fetch(`${API}/get/${NS}/${KEY}`, { cache: "no-store" });
+    const d = await r.json();
+    const v = String(d.value ?? 0);
+    heartCountEl.textContent = v;
+    localStorage.setItem(CACHE_KEY, v);
+    return v;
   }
 
-  // Increment only once per browser
-  async function addHeartOnce() {
+  async function hitOnce() {
     if (localStorage.getItem(USER_FLAG) === "1") {
       heartBtn.classList.add("liked");
       setTimeout(() => heartBtn.classList.remove("liked"), 250);
       return;
     }
+    heartBtn.disabled = true;
     try {
-      const r = await fetch(`https://api.countapi.xyz/hit/${NS}/${KEY}?amount=1`);
-      const d = await r.json();
-      heartCountEl.textContent = d.value ?? (parseInt(heartCountEl.textContent) + 1);
+      // increment the shared counter
+      await fetch(`${API}/hit/${NS}/${KEY}?amount=1`, { cache: "no-store" });
+      await getCount(); // re-read live total so all devices converge
       localStorage.setItem(USER_FLAG, "1");
-      localStorage.setItem(CACHE_KEY, heartCountEl.textContent);
       heartBtn.classList.add("liked");
-      setTimeout(() => heartBtn.classList.remove("liked"), 250);
-    } catch {
-      // fallback
-      const v = parseInt(heartCountEl.textContent) + 1;
+    } catch (e) {
+      // fallback: bump local display only
+      const v = String((parseInt(heartCountEl.textContent || "0", 10) + 1));
       heartCountEl.textContent = v;
-      localStorage.setItem(USER_FLAG, "1");
       localStorage.setItem(CACHE_KEY, v);
+      localStorage.setItem(USER_FLAG, "1");
+    } finally {
+      setTimeout(() => { heartBtn.disabled = false; heartBtn.classList.remove("liked"); }, 300);
     }
   }
 
-  loadHearts();
-  heartBtn.addEventListener("click", addHeartOnce);
+  // IMPORTANT: never create/reset on load; only read & hit
+  getCount().catch(() => {});           // try live
+  heartBtn.addEventListener("click", hitOnce);
 })();

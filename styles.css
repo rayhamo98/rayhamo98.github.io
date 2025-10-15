@@ -1,0 +1,209 @@
+/* =========
+   THEME
+   ========= */
+:root{
+  --bg-0:#0b0f14;
+  --bg-1:#0f1720;
+  --card:#0f1926cc;
+  --text:#e7f2ff;
+  --muted:#a9bcd6;
+  --accent:#5cf2d6;
+  --accent-2:#6ea8ff;
+  --ring: 0 0 0 2px rgba(92,242,214,0.35), 0 0 24px rgba(92,242,214,0.25);
+  --border:#213149;
+}
+
+/* =========
+   BASE
+   ========= */
+*{ box-sizing:border-box }
+html,body{
+  margin:0; padding:0;
+  background:var(--bg-0); color:var(--text);
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+a{ color:var(--accent-2); text-decoration:none }
+a:hover{ text-decoration:underline }
+img{ max-width:100%; display:block }
+.container{ max-width:1100px; margin:0 auto; padding:24px }
+
+/* starfield canvas (drawn by JS) */
+#sky{
+  position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(1400px 900px at 80% -10%, #1f2a3a66 0%, transparent 60%),
+    radial-gradient(1100px 800px at -10% 20%, #17304b66 0%, transparent 55%),
+    var(--bg-0);
+}
+
+/* =========
+   HERO
+   ========= */
+.hero{
+  position:relative;
+  border-radius:20px;
+  padding:36px;
+  background:linear-gradient(135deg, #0e1622 0%, #0b1018 100%);
+  border:1px solid #243245;
+  box-shadow:0 20px 80px rgba(0,0,0,0.4);
+  text-align:center;
+  overflow:hidden;
+}
+.hero::after{
+  /* soft moving glow, does NOT block clicks */
+  content:"";
+  position:absolute; inset:-200px;
+  background:conic-gradient(from 180deg at 50% 50%, #5cf2d622, #6ea8ff22, #9e6bff22, #5cf2d622);
+  filter:blur(80px);
+  animation:spin 26s linear infinite;
+  pointer-events:none;
+}
+@keyframes spin{ to{ transform:rotate(360deg) } }
+
+.title{ font-size:36px; font-weight:800; letter-spacing:.2px; margin:0 0 10px }
+.subtitle{ font-size:18px; color:var(--muted); margin:0 0 18px }
+.typing{ font-weight:800; font-size:20px; color:var(--accent) }
+
+.lead{
+  max-width:72ch; margin:0 auto 12px;
+  color:var(--muted); line-height:1.6;
+}
+
+/* buttons row */
+.btns{
+  display:flex; justify-content:center; flex-wrap:wrap;
+  gap:10px; margin-top:14px; position:relative; z-index:2;
+}
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:12px;
+  background:#0e1b2a; border:1px solid #1f3147;
+  color:var(--text); font-weight:600; cursor:pointer;
+}
+.btn:hover{ box-shadow:var(--ring) }
+.btn.primary{
+  background:linear-gradient(180deg,#0e2a28,#0a1f1d); border-color:#1b3f3a;
+}
+
+/* =========
+   LAYOUT / CARDS
+   ========= */
+.grid{ display:grid; gap:18px; grid-template-columns:repeat(12,1fr); margin-top:20px }
+.card{
+  grid-column:span 12;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:22px;
+  backdrop-filter: blur(6px);
+}
+.card h3{ margin:0 0 6px }
+.muted{ color:var(--muted) }
+
+@media (min-width:780px){
+  .half{ grid-column:span 6 }
+  .third{ grid-column:span 4 }
+}
+
+/* chips */
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px }
+.chip{
+  display:inline-block; padding:6px 10px;
+  border:1px solid #274258; border-radius:999px;
+  color:var(--muted); font-size:13px;
+  background:linear-gradient(180deg,#0f1b2a,#0d1420);
+  box-shadow:inset 0 0 12px #0b1220;
+}
+
+/* robot icon blocks (CSS-only faces) */
+.robot-icons{ display:flex; flex-wrap:wrap; gap:14px; margin-top:10px }
+.robot{
+  width:88px; height:88px; border-radius:16px;
+  background:#0d141e; border:1px solid #26354b; position:relative;
+}
+.robot::before, .robot::after{ content:""; position:absolute; background:#e6e6e6 }
+.robot-1::before{ left:16px; top:26px; width:20px; height:12px; border-radius:3px } /* left eye */
+.robot-1::after{ right:16px; top:26px; width:20px; height:12px; border-radius:3px } /* right eye */
+.robot-1{ }
+.robot-1 .mouth{}
+.robot-1{ }
+.robot-1{ }
+.robot-2::before{ left:16px; top:26px; width:20px; height:12px; border-radius:6px }
+.robot-2::after{ right:16px; top:26px; width:20px; height:12px; border-radius:6px }
+.robot-3::before{ left:16px; top:26px; width:18px; height:18px; border-radius:2px }
+.robot-3::after{ right:16px; top:26px; width:18px; height:18px; border-radius:2px }
+.robot::after{ box-shadow: none }
+
+/* draw mouths */
+.robot-1 { }
+.robot-1:has(+ *), .robot-2, .robot-3 { }
+.robot-1 .m, .robot-2 .m, .robot-3 .m { display:none } /* placeholder */
+
+/* Focus grid inside a card */
+.focus-grid{
+  display:grid; gap:14px; grid-template-columns:1fr;
+}
+.focus.card{ background:#0d141e; border-color:#26354b }
+@media (min-width:780px){
+  .focus-grid{ grid-template-columns:repeat(3,1fr) }
+}
+
+/* Now/Next list */
+.now-next{ margin:8px 0 0; padding-left:18px; line-height:1.7 }
+.now-next li{ margin:4px 0 }
+
+/* footer */
+.footer{
+  opacity:.75; font-size:13px; text-align:center; padding:28px 0 12px
+}
+.footer a{ color:var(--accent-2) }
+
+/* =========
+   CHAT WIDGET
+   ========= */
+#chatFab{
+  position:fixed; right:22px; bottom:22px; width:56px; height:56px; border-radius:50%;
+  display:grid; place-items:center; background:#0e1b2a; border:1px solid #1f3147;
+  cursor:pointer; z-index:5; box-shadow:var(--ring)
+}
+#chatBox{
+  position:fixed; right:22px; bottom:90px; width:320px;
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+  display:none; z-index:6; overflow:hidden;
+}
+.chatHeader{
+  padding:10px 12px; border-bottom:1px solid #243245;
+  display:flex; justify-content:space-between; align-items:center;
+  font-weight:600;
+}
+#chatClose{ background:none; border:none; color:var(--text); font-size:18px; cursor:pointer }
+.chatLog{ max-height:280px; overflow:auto; padding:10px 12px }
+.chatInput{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid #243245 }
+.chatInput input{
+  flex:1; padding:8px 10px; border-radius:8px; border:1px solid #243245;
+  background:#0e1b2a; color:var(--text)
+}
+.chatInput button{
+  padding:8px 12px; border-radius:8px; border:1px solid #243245;
+  background:#0e1b2a; color:var(--text); cursor:pointer
+}
+.bubble{ padding:8px 10px; margin:6px 0; border-radius:10px; max-width:85% }
+.bubble.me{ background:#15263b }
+.bubble.bot{ background:#0e1b2a; border:1px solid #1f3147 }
+
+/* =========
+   REVEAL (will be toggled by JS)
+   ========= */
+.reveal{ opacity:0; transform:translateY(12px); transition:opacity .6s ease, transform .6s ease }
+.reveal.show{ opacity:1; transform:none }
+
+/* =========
+   RESPONSIVE
+   ========= */
+@media (max-width:480px){
+  .title{ font-size:28px }
+  .subtitle{ font-size:16px }
+  .typing{ font-size:18px }
+  .btn{ padding:9px 12px }
+}

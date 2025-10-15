@@ -381,70 +381,61 @@ if (modeBtn) {
   });
 }
 // =====================
-// 9) Heart (Like) Counter — persistent, one-click per visitor
+// 9) Global Heart Counter (shared across all devices)
 // =====================
 (() => {
   const heartBtn = document.getElementById("heartBtn");
   const heartCountEl = document.getElementById("heartCount");
   if (!heartBtn || !heartCountEl) return;
 
-  // Use a stable namespace/key (no dots in namespace)
-  const NS  = "rayhamo98_github_io";
-  const KEY = "hearts_total_v2";      // new key to avoid any old bad state
-  const USER_FLAG = "ray_hearted_v2"; // per-browser like lock
-  const CACHE_KEY = "ray_heart_cache_v2";
+  const NS  = "rayhamo98";
+  const KEY = "hearts_total_global";   // one fixed shared key
+  const USER_FLAG = "ray_hearted_global";
+  const CACHE_KEY = "ray_heart_cache_global";
 
-  // If already liked before, reflect it in UI
-  if (localStorage.getItem(USER_FLAG) === "1") {
-    heartBtn.classList.add("liked");
-  }
+  // Show cached value first
+  heartCountEl.textContent = localStorage.getItem(CACHE_KEY) || "0";
 
-  async function ensureCounter() {
+  // Fetch live global count
+  async function loadHearts() {
     try {
       const r = await fetch(`https://api.countapi.xyz/get/${NS}/${KEY}`);
-      if (r.status === 404) {
-        await fetch(`https://api.countapi.xyz/create?namespace=${NS}&key=${KEY}&value=0&enable_reset=0`);
-        heartCountEl.textContent = "0";
-        localStorage.setItem(CACHE_KEY, "0");
-        return;
-      }
-      const data = await r.json();
-      const v = String(data.value ?? 0);
-      heartCountEl.textContent = v;
-      localStorage.setItem(CACHE_KEY, v);
-    } catch (e) {
-      // Fallback if blocked/offline: show cached value
-      heartCountEl.textContent = localStorage.getItem(CACHE_KEY) || "0";
+      const d = await r.json();
+      heartCountEl.textContent = d.value ?? 0;
+      localStorage.setItem(CACHE_KEY, d.value);
+    } catch {
+      /* offline fallback */
     }
   }
 
-  async function hitOnce() {
-    // block repeat likes from same browser
+  // Increment only once per browser
+  async function addHeartOnce() {
     if (localStorage.getItem(USER_FLAG) === "1") {
       heartBtn.classList.add("liked");
-      setTimeout(() => heartBtn.classList.remove("liked"), 220);
+      setTimeout(() => heartBtn.classList.remove("liked"), 250);
       return;
     }
-    heartBtn.disabled = true;
     try {
       const r = await fetch(`https://api.countapi.xyz/hit/${NS}/${KEY}?amount=1`);
-      const data = await r.json();
-      const newVal = String(data.value ?? (parseInt(heartCountEl.textContent || "0", 10) + 1));
-      heartCountEl.textContent = newVal;
+      const d = await r.json();
+      heartCountEl.textContent = d.value ?? (parseInt(heartCountEl.textContent) + 1);
       localStorage.setItem(USER_FLAG, "1");
-      localStorage.setItem(CACHE_KEY, newVal);
+      localStorage.setItem(CACHE_KEY, heartCountEl.textContent);
       heartBtn.classList.add("liked");
-    } catch (e) {
-      // fallback local bump if API blocked
-      const newVal = String(parseInt(heartCountEl.textContent || "0", 10) + 1);
-      heartCountEl.textContent = newVal;
-      localStorage.setItem(USER_FLAG, "1");
-      localStorage.setItem(CACHE_KEY, newVal);
-    } finally {
-      setTimeout(() => { heartBtn.disabled = false; }, 400);
       setTimeout(() => heartBtn.classList.remove("liked"), 250);
+    } catch {
+      // fallback
+      const v = parseInt(heartCountEl.textContent) + 1;
+      heartCountEl.textContent = v;
+      localStorage.setItem(USER_FLAG, "1");
+      localStorage.setItem(CACHE_KEY, v);
     }
   }
+
+  loadHearts();
+  heartBtn.addEventListener("click", addHeartOnce);
+})();
+
 
   ensureCounter();
   heartBtn.addEventListener("click", hitOnce);

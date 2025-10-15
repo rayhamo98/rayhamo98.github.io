@@ -49,78 +49,114 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
 
 // =====================
-//  5. Galaxy Starfield + Meteors
+//  5. Galaxy Starfield + Meteors + Floating Robots
 // =====================
 const canvas = document.getElementById("sky");
 const ctx = canvas.getContext("2d");
-let W, H, stars = [], meteors = [];
+let W, H, stars = [], meteors = [], bots = [];
 
-function resizeCanvas() {
+function resizeCanvas(){
   W = canvas.width = innerWidth;
   H = canvas.height = innerHeight;
 }
 addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-function initStars(num = 220) {
-  stars = Array.from({ length: num }, () => ({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    r: Math.random() * 1.2 + 0.2,
-    a: Math.random(),
-    s: Math.random() * 0.6 + 0.2,
+// make colorful nebula gradient behind everything
+function paintGalaxy(){
+  const g = ctx.createRadialGradient(W*0.5,H*0.5,0,W*0.5,H*0.5,H*0.9);
+  g.addColorStop(0,"#0b0f14");
+  g.addColorStop(0.3,"#10253b");
+  g.addColorStop(0.55,"#1a2f48");
+  g.addColorStop(0.75,"#111a27");
+  g.addColorStop(1,"#090c11");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+}
+
+// build objects
+function initStars(n=280){
+  stars = Array.from({length:n},()=>({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:Math.random()*1.4+0.2,
+    a:Math.random(),
+    s:Math.random()*0.8+0.2
   }));
 }
 initStars();
 
-function spawnMeteor() {
-  const y = Math.random() * H * 0.6;
-  meteors.push({
-    x: -50,
-    y,
-    vx: 8 + Math.random() * 5,
-    vy: 3 + Math.random() * 2,
-    life: 0,
+function spawnMeteor(){
+  const y=Math.random()*H*0.6;
+  meteors.push({x:-80,y,dx:10+Math.random()*6,dy:4+Math.random()*3});
+}
+function spawnBot(){
+  bots.push({
+    x:Math.random()*W,
+    y:Math.random()*H,
+    r:30+Math.random()*40,
+    speed:(Math.random()*0.3+0.05)*(Math.random()<0.5?1:-1),
+    alpha:0.05+Math.random()*0.15
   });
 }
+for(let i=0;i<6;i++)spawnBot();
 
-let lastTime = 0;
-function animate(t) {
-  const dt = (t - lastTime) || 16;
-  lastTime = t;
-  ctx.clearRect(0, 0, W, H);
+function drawBot(b){
+  ctx.save();
+  ctx.translate(b.x,b.y);
+  ctx.rotate(Math.sin(Date.now()/1000 + b.x)*0.2);
+  ctx.strokeStyle=`rgba(92,242,214,${b.alpha})`;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.rect(-b.r/2,-b.r/2,b.r,b.r);
+  ctx.moveTo(-b.r/4,-b.r/4);
+  ctx.rect(-b.r/4,-b.r/4,b.r/2,b.r/2);
+  ctx.stroke();
+  ctx.restore();
+}
 
-  // stars twinkle
-  for (const s of stars) {
-    s.a += (Math.random() - 0.5) * 0.05;
-    s.a = Math.max(0.2, Math.min(1, s.a));
-    ctx.fillStyle = `rgba(200,220,255,${s.a})`;
+let last=0;
+function animateGalaxy(t){
+  const dt=(t-last)||16; last=t;
+  paintGalaxy();
+
+  // twinkling stars
+  for(const s of stars){
+    s.a += (Math.random()-0.5)*0.04;
+    s.a=Math.max(0.2,Math.min(1,s.a));
+    ctx.fillStyle=`rgba(220,240,255,${s.a})`;
     ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
     ctx.fill();
   }
 
   // meteors
-  if (Math.random() < 0.008) spawnMeteor();
-  for (const m of meteors) {
-    m.x += m.vx;
-    m.y += m.vy;
-    const grad = ctx.createLinearGradient(m.x - 80, m.y - 40, m.x, m.y);
-    grad.addColorStop(0, "rgba(110,168,255,0)");
-    grad.addColorStop(1, "rgba(110,168,255,0.9)");
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 2;
+  if(Math.random()<0.006)spawnMeteor();
+  for(const m of meteors){
+    m.x+=m.dx; m.y+=m.dy;
+    const g=ctx.createLinearGradient(m.x-100,m.y-50,m.x,m.y);
+    g.addColorStop(0,"rgba(110,168,255,0)");
+    g.addColorStop(1,"rgba(110,168,255,0.9)");
+    ctx.strokeStyle=g;
+    ctx.lineWidth=2;
     ctx.beginPath();
-    ctx.moveTo(m.x - 80, m.y - 40);
-    ctx.lineTo(m.x, m.y);
+    ctx.moveTo(m.x-100,m.y-50);
+    ctx.lineTo(m.x,m.y);
     ctx.stroke();
   }
-  meteors = meteors.filter((m) => m.x < W + 100 && m.y < H + 100);
+  meteors=meteors.filter(m=>m.x<W+100 && m.y<H+100);
 
-  requestAnimationFrame(animate);
+  // moving robots
+  for(const b of bots){
+    b.x+=b.speed;
+    if(b.x<-80) b.x=W+80;
+    if(b.x>W+80) b.x=-80;
+    drawBot(b);
+  }
+
+  requestAnimationFrame(animateGalaxy);
 }
-requestAnimationFrame(animate);
-
+requestAnimationFrame(animateGalaxy);
 // =====================
 //  6. Ray’s Assistant Chat
 // =====================

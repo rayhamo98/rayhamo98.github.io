@@ -381,7 +381,7 @@ if (modeBtn) {
   });
 }
 // =====================
-// 9. Global Heart Counter (Firebase Realtime DB)
+// 9) Global Heart Counter (Firebase Realtime DB) — no auto-reset
 // =====================
 (() => {
   const heartBtn = document.getElementById("heartBtn");
@@ -392,18 +392,22 @@ if (modeBtn) {
   const heartsRef = db.ref("hearts/total");
   const USER_FLAG = "ray_hearted_firebase_v1";
 
-  // Show live value
+  // Show cached immediately, then live value
+  const cached = localStorage.getItem("heart_cache_v1");
+  if (cached) heartCountEl.textContent = cached;
+
+  // Live updates — DO NOT WRITE when missing; just display "0"
   heartsRef.on("value", (snap) => {
     const v = snap.val();
-    if (typeof v === "number") {
-      heartCountEl.textContent = String(v);
-      localStorage.setItem("heart_cache_v1", String(v));
-    } else {
-      heartsRef.set(0);
-    }
+    const shown = (typeof v === "number") ? v : 0;
+    heartCountEl.textContent = String(shown);
+    localStorage.setItem("heart_cache_v1", String(shown));
+  }, () => {
+    // read error -> keep cached or show "0"
+    heartCountEl.textContent = cached || "0";
   });
 
-  // Increment once per browser
+  // Increment once per browser using a transaction (atomic +1)
   async function addHeartOnce() {
     if (localStorage.getItem(USER_FLAG) === "1") {
       heartBtn.classList.add("liked");
@@ -412,7 +416,7 @@ if (modeBtn) {
     }
     heartBtn.disabled = true;
     try {
-      await heartsRef.transaction((current) => (typeof current === "number" ? current + 1 : 1));
+      await heartsRef.transaction(cur => (typeof cur === "number" ? cur + 1 : 1));
       localStorage.setItem(USER_FLAG, "1");
       heartBtn.classList.add("liked");
     } catch (e) {

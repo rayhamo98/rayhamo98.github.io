@@ -23,6 +23,37 @@
     };
     firebase.initializeApp(firebaseConfig);
   </script>
+<script>
+  // --- access gate ---
+  const ADMIN_UID = "zbbJP2nxIibBRjhrEm5YTIGcX1i1"; // your UID
+  const auth = firebase.auth();
+
+  // optional: redirect non-admins
+  auth.onAuthStateChanged(user => {
+    const path = window.location.pathname.toLowerCase();
+    const isAdminPage = path.includes("admin");
+    if (user) {
+      if (user.uid !== ADMIN_UID) {
+        alert("Access denied: admin only.");
+        if (isAdminPage) window.location.href = "index.html";
+      }
+    } else {
+      // not signed in yet
+      if (isAdminPage) {
+        document.body.innerHTML = `
+          <div style="color:#eee;text-align:center;margin-top:50px;font-family:sans-serif">
+            <h2>🔒 Admin Login Required</h2>
+            <p>This area is restricted. Please sign in with your admin Google account.</p>
+            <button id="loginBtn" style="padding:10px 16px;border-radius:6px;border:none;background:#4285f4;color:white;font-size:16px;">Sign in</button>
+          </div>`;
+        document.getElementById("loginBtn").onclick = async () => {
+          const provider = new firebase.auth.GoogleAuthProvider();
+          await auth.signInWithPopup(provider);
+        };
+      }
+    }
+  });
+</script>
 
   <style>
     body { font-family: system-ui, Arial, sans-serif; background:#0b1220; color:#e8f0ff; padding:24px; }

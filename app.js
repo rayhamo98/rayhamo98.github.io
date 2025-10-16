@@ -428,3 +428,42 @@ if (modeBtn) {
 
   heartBtn.addEventListener("click", addHeartOnce);
 })();
+
+// ==== Sign in / Sign out UI wiring ====
+const signinBtn  = document.getElementById("signinBtn");
+const signoutBtn = document.getElementById("signoutBtn");
+const authStatus = document.getElementById("authStatus");
+
+// Click handlers
+signinBtn?.addEventListener("click", async () => {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await firebase.auth().signInWithPopup(provider);
+  } catch (e) {
+    console.error(e);
+    alert("Sign-in failed: " + e.message);
+  }
+});
+
+signoutBtn?.addEventListener("click", async () => {
+  try {
+    await firebase.auth().signOut();
+  } catch (e) {
+    console.error(e);
+    alert("Sign-out failed: " + e.message);
+  }
+});
+
+// Reflect auth state in UI
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    if (signinBtn)  signinBtn.style.display = "none";
+    if (signoutBtn) signoutBtn.style.display = "";
+    if (authStatus) authStatus.textContent = `Signed in as ${user.email || user.uid}`;
+  } else {
+    if (signinBtn)  signinBtn.style.display = "";
+    if (signoutBtn) signoutBtn.style.display = "none";
+    if (authStatus) authStatus.textContent = "Not signed in";
+  }
+});
+

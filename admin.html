@@ -62,6 +62,41 @@
     <p class="ok" id="msg"></p>
     <p class="err" id="err"></p>
   </div>
+  
+<div class="card" style="margin-top:16px;" id="contentCard" hidden>
+  <h3>📝 Site Content (Public)</h3>
+
+  <div class="row">
+    <label style="min-width:120px;">Hero Title</label>
+    <input id="heroTitle" style="width:100%;" placeholder="Rimon Hamo (RAY)" />
+  </div>
+  <div class="row">
+    <label style="min-width:120px;">Hero Subtitle</label>
+    <input id="heroSubtitle" style="width:100%;" placeholder="Engineer & builder focused on …" />
+  </div>
+
+  <div class="row">
+    <label style="min-width:120px;">Now</label>
+    <input id="nowText" style="width:100%;" placeholder="Refining TARS frame & control loop…" />
+  </div>
+  <div class="row">
+    <label style="min-width:120px;">Next</label>
+    <input id="nextText" style="width:100%;" placeholder="Integrate speech I/O and planning…" />
+  </div>
+  <div class="row">
+    <label style="min-width:120px;">Learning</label>
+    <input id="learningText" style="width:100%;" placeholder="Algorithms, ML, systems…" />
+  </div>
+
+  <div class="row" style="justify-content:flex-end;">
+    <button id="loadSite">Load</button>
+    <button id="saveSite">Save</button>
+  </div>
+
+  <p class="muted">DB path: <code>site/hero/*</code>, <code>site/nowNext/*</code></p>
+  <p class="ok" id="siteMsg"></p>
+  <p class="err" id="siteErr"></p>
+</div>
 
   <script>
     const db = firebase.database();

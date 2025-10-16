@@ -24,64 +24,63 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 <script>
-  // --- ACCESS GATE (runs after Firebase init) ---
-  const ADMIN_UID = "zbbJP2nxIibBRjhrEm5YTIGcX1i1";
-  const auth = firebase.auth();
+  // ===== Admin Access Config =====
+  const ADMIN_UID   = "zbbJP2nxIibBRjhrEm5YTIGcX1i1"; // your UID
+  const ACCESS_KEY  = "RIMON-ONLY-2025";              // pick any secret string
+  const auth        = firebase.auth();
 
-  // Create a lightweight overlay instead of replacing the whole body
+  // ---- URL access-key gate (no key -> bounce) ----
+  const urlKey = new URLSearchParams(location.search).get("key");
+  if (urlKey !== ACCESS_KEY) {
+    // Hide the app immediately and show a fake 404 message
+    document.write(`
+      <style>body{background:#0b1220;color:#e8f0ff;font-family:system-ui}</style>
+      <div style="max-width:720px;margin:20vh auto;text-align:center">
+        <h2>404 — Not Found</h2>
+        <p>This page does not exist.</p>
+      </div>
+    `);
+    throw new Error("Admin access key missing or wrong");
+  }
+
+  // ---- Visual overlay until we verify admin account ----
   const gate = document.createElement("div");
-  gate.id = "admin-gate";
   gate.style.cssText = `
-    position:fixed; inset:0; display:none; z-index:9999;
-    background:#0b1220; color:#e8f0ff; font-family:system-ui;
-    align-items:center; justify-content:center; text-align:center; padding:24px;
+    position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:#0b1220;color:#e8f0ff;z-index:9999;font-family:system-ui
   `;
   gate.innerHTML = `
-    <div>
+    <div style="text-align:center;max-width:520px;padding:24px">
       <h2 style="margin:0 0 12px">🔒 Admin Login Required</h2>
-      <p style="margin:0 0 20px; color:#9bb0d3">Sign in with your authorized Google account to continue.</p>
-      <button id="loginBtn" style="padding:10px 16px;border:none;border-radius:8px;background:#4285f4;color:white;font-size:16px;cursor:pointer">
+      <p style="margin:0 0 20px;color:#9bb0d3">
+        Sign in with your authorized Google account to continue.
+      </p>
+      <button id="loginBtn" style="padding:10px 16px;border:none;border-radius:8px;background:#4285f4;color:#fff;cursor:pointer">
         Sign in with Google
       </button>
     </div>
   `;
-  document.body.appendChild(gate);
-
-  // Hide the app until we verify
-  document.body.style.visibility = "hidden";
-
-  gate.querySelector("#loginBtn").onclick = async () => {
-    try {
+  document.addEventListener("DOMContentLoaded", () => document.body.appendChild(gate));
+  document.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "loginBtn") {
       const provider = new firebase.auth.GoogleAuthProvider();
-      await auth.signInWithPopup(provider);
-    } catch (e) {
-      alert("Login failed: " + e.message);
+      auth.signInWithPopup(provider).catch(err => alert("Login failed: " + err.message));
     }
-  };
+  });
 
+  // ---- Enforce admin-only AFTER sign-in (auto sign-out + redirect) ----
   auth.onAuthStateChanged(user => {
-    const isAdminPage = location.pathname.toLowerCase().includes("admin");
-    if (!isAdminPage) return; // safety
-
-    if (!user) {
-      // show gate, keep app hidden
-      gate.style.display = "flex";
-      document.body.style.visibility = "hidden";
-      return;
-    }
-
+    if (!user) return; // waits for sign in
     if (user.uid !== ADMIN_UID) {
       alert("Access denied: admin only.");
-      location.href = "index.html";
+      auth.signOut().finally(() => location.href = "/");
       return;
     }
-
-    // Admin verified: show app, hide gate
-    gate.style.display = "none";
-    document.body.style.visibility = "visible";
-    console.log("✅ Admin verified:", user.email);
+    // Admin verified -> remove overlay
+    if (gate && gate.parentNode) gate.parentNode.removeChild(gate);
   });
 </script>
+
 
 
   <style>

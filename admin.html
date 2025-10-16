@@ -24,36 +24,65 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 <script>
-  // --- access gate ---
-  const ADMIN_UID = "zbbJP2nxIibBRjhrEm5YTIGcX1i1"; // your UID
+  // --- ACCESS GATE (runs after Firebase init) ---
+  const ADMIN_UID = "zbbJP2nxIibBRjhrEm5YTIGcX1i1";
   const auth = firebase.auth();
 
-  // optional: redirect non-admins
-  auth.onAuthStateChanged(user => {
-    const path = window.location.pathname.toLowerCase();
-    const isAdminPage = path.includes("admin");
-    if (user) {
-      if (user.uid !== ADMIN_UID) {
-        alert("Access denied: admin only.");
-        if (isAdminPage) window.location.href = "index.html";
-      }
-    } else {
-      // not signed in yet
-      if (isAdminPage) {
-        document.body.innerHTML = `
-          <div style="color:#eee;text-align:center;margin-top:50px;font-family:sans-serif">
-            <h2>🔒 Admin Login Required</h2>
-            <p>This area is restricted. Please sign in with your admin Google account.</p>
-            <button id="loginBtn" style="padding:10px 16px;border-radius:6px;border:none;background:#4285f4;color:white;font-size:16px;">Sign in</button>
-          </div>`;
-        document.getElementById("loginBtn").onclick = async () => {
-          const provider = new firebase.auth.GoogleAuthProvider();
-          await auth.signInWithPopup(provider);
-        };
-      }
+  // Create a lightweight overlay instead of replacing the whole body
+  const gate = document.createElement("div");
+  gate.id = "admin-gate";
+  gate.style.cssText = `
+    position:fixed; inset:0; display:none; z-index:9999;
+    background:#0b1220; color:#e8f0ff; font-family:system-ui;
+    align-items:center; justify-content:center; text-align:center; padding:24px;
+  `;
+  gate.innerHTML = `
+    <div>
+      <h2 style="margin:0 0 12px">🔒 Admin Login Required</h2>
+      <p style="margin:0 0 20px; color:#9bb0d3">Sign in with your authorized Google account to continue.</p>
+      <button id="loginBtn" style="padding:10px 16px;border:none;border-radius:8px;background:#4285f4;color:white;font-size:16px;cursor:pointer">
+        Sign in with Google
+      </button>
+    </div>
+  `;
+  document.body.appendChild(gate);
+
+  // Hide the app until we verify
+  document.body.style.visibility = "hidden";
+
+  gate.querySelector("#loginBtn").onclick = async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    } catch (e) {
+      alert("Login failed: " + e.message);
     }
+  };
+
+  auth.onAuthStateChanged(user => {
+    const isAdminPage = location.pathname.toLowerCase().includes("admin");
+    if (!isAdminPage) return; // safety
+
+    if (!user) {
+      // show gate, keep app hidden
+      gate.style.display = "flex";
+      document.body.style.visibility = "hidden";
+      return;
+    }
+
+    if (user.uid !== ADMIN_UID) {
+      alert("Access denied: admin only.");
+      location.href = "index.html";
+      return;
+    }
+
+    // Admin verified: show app, hide gate
+    gate.style.display = "none";
+    document.body.style.visibility = "visible";
+    console.log("✅ Admin verified:", user.email);
   });
 </script>
+
 
   <style>
     body { font-family: system-ui, Arial, sans-serif; background:#0b1220; color:#e8f0ff; padding:24px; }
@@ -132,7 +161,6 @@
   <script>
     const db = firebase.database();
     const heartsRef = db.ref("hearts/total");
-    const auth = firebase.auth();
     const provider = new firebase.auth.GoogleAuthProvider();
 
     const signin = document.getElementById('signin');

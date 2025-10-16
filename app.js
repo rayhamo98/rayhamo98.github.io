@@ -467,3 +467,64 @@ firebase.auth().onAuthStateChanged((user) => {
   }
 });
 
+// ---- Site content refs ----
+const contentCard   = document.getElementById('contentCard');
+const heroTitle     = document.getElementById('heroTitle');
+const heroSubtitle  = document.getElementById('heroSubtitle');
+const nowText       = document.getElementById('nowText');
+const nextText      = document.getElementById('nextText');
+const learningText  = document.getElementById('learningText');
+const loadSiteBtn   = document.getElementById('loadSite');
+const saveSiteBtn   = document.getElementById('saveSite');
+const siteMsg       = document.getElementById('siteMsg');
+const siteErr       = document.getElementById('siteErr');
+
+const siteRef       = db.ref("site");
+const heroRef       = db.ref("site/hero");
+const nowNextRef    = db.ref("site/nowNext");
+
+// Show this card only when signed in (you already toggle panel—do same here)
+auth.onAuthStateChanged(user => {
+  contentCard.hidden = !user; // admin-only writes are enforced by rules
+});
+
+// Load current values
+loadSiteBtn.onclick = async () => {
+  siteMsg.textContent = ""; siteErr.textContent = "";
+  try {
+    const [heroSnap, nnSnap] = await Promise.all([heroRef.get(), nowNextRef.get()]);
+    const hero = heroSnap.val() || {};
+    const nn   = nnSnap.val()   || {};
+    heroTitle.value    = hero.title    || "";
+    heroSubtitle.value = hero.subtitle || "";
+    nowText.value      = nn.now        || "";
+    nextText.value     = nn.next       || "";
+    learningText.value = nn.learning   || "";
+    siteMsg.textContent = "Loaded.";
+  } catch (e) {
+    siteErr.textContent = e.message;
+  }
+};
+
+// Save values
+saveSiteBtn.onclick = async () => {
+  siteMsg.textContent = ""; siteErr.textContent = "";
+  const payload = {
+    hero: {
+      title:    heroTitle.value.trim(),
+      subtitle: heroSubtitle.value.trim()
+    },
+    nowNext: {
+      now:      nowText.value.trim(),
+      next:     nextText.value.trim(),
+      learning: learningText.value.trim()
+    },
+    updatedAt: Date.now()
+  };
+  try {
+    await siteRef.update(payload);
+    siteMsg.textContent = "Saved.";
+  } catch (e) {
+    siteErr.textContent = e.message;
+  }
+};

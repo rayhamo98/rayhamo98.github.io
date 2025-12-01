@@ -305,7 +305,7 @@ if (chatFab) {
   chatFab.addEventListener("click", () => {
     chatBox.style.display = "block";
     chatLog.innerHTML = "";
-    addBubble("Hi! This will be done for the future.");
+    addBubble("Jarvis is currently initializing… Full functionality will be available in the near future.");
   });
 }
 if (chatClose) {

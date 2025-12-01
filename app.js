@@ -317,7 +317,7 @@ if (chatSend) {
   chatSend.addEventListener("click", () => {
     const q = chatMsg.value.trim(); if (!q) return;
     addBubble(q, "me"); chatMsg.value = "";
-    setTimeout(() => addBubble("This will be done for the future."), 600);
+    setTimeout(() => addBubble("Jarvis is not online yet, but Ray is building me piece by piece. I’ll be fully operational soon."), 600);
   });
 }
 

@@ -55,8 +55,8 @@ Developed a simple, efficient Java program for calculating student grade average
 - **Email:** RimonHamo@yahoo.com  
 - **GitHub:** [github.com/rayhamo98](https://github.com/rayhamo98)  
 - **LinkedIn:** [linkedin.com/in/rimon-hamo](https://www.linkedin.com/in/rimon-hamo)
-- **[Download My Resume](/Rimon's-Resume.pdf)
-- **[👉 View My Resume](Rimon's-Resume.pdf)
+- **[Download My Resume](/Rimon's_Resume.pdf)
+- **[👉 View My Resume](Rimon's_Resume.pdf)
 ---
 ### 💡 Quote
 > “Technology is the bridge between today’s dreams and tomorrow’s reality.” — *Rimon H.*
